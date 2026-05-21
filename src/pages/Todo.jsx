@@ -1,0 +1,279 @@
+import React, { useState, useEffect } from "react";
+import { fetchTodos, saveTodos } from "../utils/syncService";
+
+export default function Todo() {
+  const [tasks, setTasks] = useState([]);
+  const [input, setInput] = useState("");
+  const [priority, setPriority] = useState("Medium");
+  const [filter, setFilter] = useState("All");
+  const [dbSource, setDbSource] = useState("local");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Load from Supabase (or localStorage fallback) on mount
+  useEffect(() => {
+    const defaultTasks = [
+      { id: "todo-1", text: "Finish portfolio header adjustments", completed: true, priority: "High" },
+      { id: "todo-2", text: "Add project CRUD views to dashboard", completed: false, priority: "High" },
+      { id: "todo-3", text: "Draft new blog post in journal", completed: false, priority: "Medium" },
+      { id: "todo-4", text: "Review pull requests", completed: false, priority: "Low" }
+    ];
+
+    fetchTodos(defaultTasks).then((res) => {
+      if (res && res.data) {
+        setTasks(res.data);
+        setDbSource(res.source);
+      }
+      setIsInitialLoad(false);
+    });
+  }, []);
+
+  // Save to localStorage and Supabase when tasks change (only after initial load has finished)
+  useEffect(() => {
+    if (isInitialLoad) return;
+    localStorage.setItem("todo_tasks", JSON.stringify(tasks));
+    saveTodos(tasks).then((res) => {
+      setDbSource(res.success ? "supabase" : "local");
+    });
+  }, [tasks, isInitialLoad]);
+
+  const addTask = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const newTask = {
+      id: crypto.randomUUID(),
+      text: input.trim(),
+      completed: false,
+      priority
+    };
+    setTasks([newTask, ...tasks]);
+    setInput("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(
+      tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    );
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((t) => t.id !== id));
+  };
+
+  const clearCompleted = () => {
+    setTasks(tasks.filter((t) => !t.completed));
+  };
+
+  // Filter tasks
+  const filteredTasks = tasks.filter((t) => {
+    if (filter === "Active") return !t.completed;
+    if (filter === "Completed") return t.completed;
+    return true;
+  });
+
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.completed).length;
+  const percentComplete = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  return (
+    <div className="todo-page-container">
+      {/* Page Header */}
+      <div className="resume-header-controls" style={{ borderBottom: "none", marginBottom: "16px" }}>
+        <div className="header-title-wrapper">
+          <h1 className="dashboard-title">Task Workspace</h1>
+          <p className="dashboard-subtitle">Organize and manage your software development tasks</p>
+        </div>
+      </div>
+
+      {/* Stats Dashboard Card */}
+      <div className="resume-card todo-stats-card" style={{ marginBottom: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+          <div>
+            <h3 style={{ margin: "0 0 6px 0", color: "var(--text-h)" }}>Task Completion Progress</h3>
+            <span style={{ fontSize: "14px", color: "var(--text)" }}>
+              {completedTasks} of {totalTasks} tasks completed ({percentComplete}%)
+            </span>
+          </div>
+          {completedTasks > 0 && (
+            <button className="btn-secondary" onClick={clearCompleted} style={{ padding: "6px 14px", fontSize: "13px" }}>
+              Clear Completed
+            </button>
+          )}
+        </div>
+        {/* Progress Bar */}
+        <div style={{ width: "100%", height: "10px", background: "var(--border)", borderRadius: "5px", marginTop: "16px", overflow: "hidden" }}>
+          <div style={{
+            width: `${percentComplete}%`,
+            height: "100%",
+            background: "var(--text-h)",
+            borderRadius: "5px",
+            transition: "width 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+          }}></div>
+        </div>
+      </div>
+
+      <div className="resume-body-grid" style={{ gridTemplateColumns: "1.4fr 1fr" }}>
+        {/* Left Pane: Tasks List */}
+        <div>
+          {/* Filters Row */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            {["All", "Active", "Completed"].map((f) => (
+              <button
+                key={f}
+                className={`filter-btn ${filter === f ? "active" : ""}`}
+                onClick={() => setFilter(f)}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* List Card */}
+          <div className="resume-card" style={{ padding: "20px" }}>
+            {filteredTasks.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="var(--accent)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6, marginBottom: "12px" }}>
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h4 style={{ margin: "0 0 4px 0", color: "var(--text-h)" }}>No tasks found</h4>
+                <p style={{ fontSize: "14px", color: "var(--text)" }}>
+                  {filter === "All"
+                    ? "Add a new task below to kickstart your work!"
+                    : `No ${filter.toLowerCase()} tasks match this filter.`}
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {filteredTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="todo-item-row"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "12px 16px",
+                      borderRadius: "10px",
+                      background: "var(--code-bg)",
+                      border: `1px solid ${task.completed ? "var(--border)" : "transparent"}`,
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1 }}>
+                      <label className="checkbox-container" style={{ position: "relative", cursor: "pointer", display: "inline-block", width: "20px", height: "20px" }}>
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() => toggleTask(task.id)}
+                          style={{
+                            opacity: 0,
+                            width: 0,
+                            height: 0,
+                            position: "absolute"
+                          }}
+                        />
+                        <span className={`custom-checkbox ${task.completed ? "checked" : ""}`} style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          height: "20px",
+                          width: "20px",
+                          backgroundColor: task.completed ? "var(--accent)" : "transparent",
+                          border: `2px solid ${task.completed ? "var(--accent)" : "var(--text)"}`,
+                          borderRadius: "6px",
+                          transition: "all 0.2s ease"
+                        }}>
+                          {task.completed && (
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", top: "1px", left: "1px" }}>
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          )}
+                        </span>
+                      </label>
+                      <span style={{
+                        fontSize: "15px",
+                        color: task.completed ? "var(--text)" : "var(--text-h)",
+                        textDecoration: task.completed ? "line-through" : "none",
+                        opacity: task.completed ? 0.6 : 1,
+                        transition: "all 0.2s ease",
+                        wordBreak: "break-word"
+                      }}>
+                        {task.text}
+                      </span>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span className={`priority-badge ${task.priority.toLowerCase()}`} style={{
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        padding: "3px 8px",
+                        borderRadius: "12px",
+                        letterSpacing: "0.2px",
+                        textTransform: "uppercase"
+                      }}>
+                        {task.priority}
+                      </span>
+                      <button
+                        className="icon-action-btn delete-btn"
+                        onClick={() => deleteTask(task.id)}
+                        title="Delete task"
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2.5" fill="none">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Pane: Create Task Form */}
+        <div>
+          <div className="resume-card glass-panel" style={{ padding: "20px" }}>
+            <h3 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "var(--text-h)", borderBottom: "2px solid var(--border)", paddingBottom: "8px" }}>
+              Add New Task
+            </h3>
+            <form onSubmit={addTask} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div className="form-group">
+                <label>Task Description *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="e.g. Design app database schema"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Priority Level</label>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {["Low", "Medium", "High"].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      className={`filter-btn ${priority === p ? "active" : ""}`}
+                      onClick={() => setPriority(p)}
+                      style={{ flex: 1, padding: "6px 0", fontSize: "13px" }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" className="btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: "8px" }}>
+                Add Task
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
