@@ -58,6 +58,8 @@ export const defaultResumeData = {
       id: "edu-1",
       degree: "BSc in Computer Science & Engineering",
       institution: "Independent University Bangladesh (IUB)",
+      minor: "Management Information Systems (MIS)",
+      minorDescription: "Focused on bridging the gap between business and technology, covering enterprise systems, IT project management, and business intelligence.",
       startYear: "2023",
       endYear: "Present",
       description:

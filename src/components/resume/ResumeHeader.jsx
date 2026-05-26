@@ -38,7 +38,6 @@ export default function ResumeHeader({ mode = "view", onRequestModeChange, onPri
             <line x1="12" y1="15" x2="12" y2="3"></line>
             <path d="M18 17H6a3 3 0 0 0-3 3v2h18v-2a3 3 0 0 0-3-3z"></path>
           </svg>
-          <span>Print / PDF</span>
         </button>
 
         {/* Auth controls: Only show when logged in */}

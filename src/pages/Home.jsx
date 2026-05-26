@@ -7,7 +7,7 @@ import ProjectsSection from "../components/resume/ProjectsSection";
 import { defaultResumeData } from "../components/resume/defaultData";
 import { fetchResumeData, saveResumeData } from "../utils/syncService";
 import { getCurrentUser, onAuthStateChange, signOut } from "../utils/supabase";
-import EducationSection from "../components/resume/EducationSection";
+import EducationSection from "../components/resume/EducationSectionNew";
 import AuthModal from "../components/AuthModal";
 
 const LOCAL_STORAGE_KEY = "resume_data_v1";

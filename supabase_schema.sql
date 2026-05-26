@@ -48,6 +48,21 @@ ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read-write access to journal_entries" ON journal_entries 
   FOR ALL USING (true) WITH CHECK (true);
 
+-- 4. DSA Tasks Table
+CREATE TABLE IF NOT EXISTS dsa_tasks (
+  id TEXT PRIMARY KEY,
+  platform TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  title TEXT NOT NULL,
+  status TEXT DEFAULT 'Pending' NOT NULL,
+  selected_langs JSONB DEFAULT '[]'::jsonb NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+ALTER TABLE dsa_tasks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public read-write access to dsa_tasks" ON dsa_tasks 
+  FOR ALL USING (true) WITH CHECK (true);
+
 -- Seed Initial Data
 INSERT INTO resume_profile (id, data)
 VALUES (
