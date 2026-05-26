@@ -1,31 +1,10 @@
 import React from "react";
 
-export default function Sidebar({ activePage, setPage, theme, toggleTheme, isCollapsed, onToggle }) {
+export default function Sidebar({ activePage, setPage, theme, toggleTheme, isCollapsed, onToggle, isMobileOpen }) {
   return (
-    <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
+    <aside className={`sidebar ${isCollapsed ? "collapsed" : ""} ${isMobileOpen ? "mobile-open" : ""}`}>
       <div className="sidebar-top">
-        <div className="sidebar-header">
-          {!isCollapsed && (
-            <div className="sidebar-logo">
-              <svg
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ stroke: "var(--accent)" }}
-              >
-                <rect x="3" y="3" width="7" height="9"></rect>
-                <rect x="14" y="3" width="7" height="5"></rect>
-                <rect x="14" y="12" width="7" height="9"></rect>
-                <rect x="3" y="16" width="7" height="5"></rect>
-              </svg>
-              <span>My Dashboard</span>
-            </div>
-          )}
+        <div className="sidebar-header" style={{ justifyContent: "center" }}>
           <button className="sidebar-toggle-btn" onClick={onToggle} title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none">
               {isCollapsed ? (
@@ -54,13 +33,13 @@ export default function Sidebar({ activePage, setPage, theme, toggleTheme, isCol
           <li
             className={`sidebar-item ${activePage === "todo" ? "active" : ""}`}
             onClick={() => setPage("todo")}
-            title={isCollapsed ? "Todo" : ""}
+            title={isCollapsed ? "Todo List" : ""}
           >
             <svg viewBox="0 0 24 24">
               <polyline points="9 11 12 14 22 4"></polyline>
               <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
             </svg>
-            {!isCollapsed && <span>Todo</span>}
+            {!isCollapsed && <span>Todo List</span>}
           </li>
           <li
             className={`sidebar-item ${activePage === "journal" ? "active" : ""}`}
@@ -75,18 +54,16 @@ export default function Sidebar({ activePage, setPage, theme, toggleTheme, isCol
           </li>
         </ul>
 
-
-
-        {/* Theme toggle — icon only, vertical */}
+        {/* Theme toggle — single icon toggle */}
         <div className="theme-switch-wrapper">
-          <div className="theme-switch" style={{ flexDirection: "column" }}>
-            <button
-              type="button"
-              className={`theme-option ${theme === "light" ? "active" : ""}`}
-              onClick={() => theme !== "light" && toggleTheme()}
-              title="Light mode"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none">
+          <button
+            type="button"
+            className="theme-toggle-icon-btn"
+            onClick={toggleTheme}
+            title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"}
+          >
+            {theme === "light" ? (
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none">
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />
                 <line x1="12" y1="21" x2="12" y2="23" />
@@ -97,18 +74,13 @@ export default function Sidebar({ activePage, setPage, theme, toggleTheme, isCol
                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </svg>
-            </button>
-            <button
-              type="button"
-              className={`theme-option ${theme === "dark" ? "active" : ""}`}
-              onClick={() => theme !== "dark" && toggleTheme()}
-              title="Dark mode"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none">
+            ) : (
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2.5" fill="none">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
-            </button>
-          </div>
+            )}
+            {!isCollapsed && <span>{theme === "light" ? "Light Mode" : "Dark Mode"}</span>}
+          </button>
         </div>
       </div>
     </aside>

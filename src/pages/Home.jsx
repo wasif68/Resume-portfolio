@@ -34,6 +34,7 @@ export default function Home() {
   const isEditMode = mode === "owner" && isAdmin;
 
   const [resumeData, setResumeData] = useState(() => seedResumeIfEmpty());
+  const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState("saved"); // 'saved' | 'saving' | 'error'
   const autosaveTimerRef = useRef(null);
 
@@ -54,8 +55,11 @@ export default function Home() {
 
     // Fetch from Supabase, then merge
     fetchResumeData(defaultResumeData).then((res) => {
-      if (active && res?.data) {
-        setResumeData(normalize(res.data));
+      if (active) {
+        if (res?.data) {
+          setResumeData(normalize(res.data));
+        }
+        setIsLoading(false);
       }
     });
 
@@ -181,6 +185,21 @@ export default function Home() {
   };
 
   const handlePrint = () => window.print();
+
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100%", 
+        width: "100%",
+        color: "var(--text-h)"
+      }}>
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="resume-container">

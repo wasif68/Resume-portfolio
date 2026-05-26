@@ -28,22 +28,25 @@ export default function App() {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
-  return (
-    <div className={`dashboard-container ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
-      <Sidebar 
-        activePage={page} 
-        setPage={setPage} 
-        theme={theme} 
-        toggleTheme={toggleTheme} 
-        isCollapsed={isSidebarCollapsed}
-        onToggle={toggleSidebar}
-      />
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+return (
+  <div className={`dashboard-container ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+    <Sidebar 
+      activePage={page} 
+      setPage={handlePageChange} 
+      theme={theme} 
+      toggleTheme={toggleTheme} 
+      isCollapsed={isSidebarCollapsed}
+      onToggle={toggleSidebar}
+    />
 
-      <main className="main-content">
-        {page === "home" && <Home />}
-        {page === "todo" && <Todo />}
-        {page === "journal" && <Journal />}
-      </main>
-    </div>
-  );
+    <main className="main-content">
+      {page === "home" && <Home />}
+      {page === "todo" && <Todo />}
+      {page === "journal" && <Journal />}
+    </main>
+  </div>
+);
 }
